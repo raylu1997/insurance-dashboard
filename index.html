@@ -38,6 +38,8 @@
             margin-bottom: 24px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 100;
         }
 
         .filter-title {
@@ -161,6 +163,8 @@
         /* 指标卡片区域 */
         .metrics-section {
             margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
         }
 
         .metrics-grid {
@@ -380,6 +384,15 @@
             opacity: 1;
         }
 
+        .multi-select-container {
+            position: relative;
+            z-index: 10;
+        }
+
+        .multi-select-container:focus-within {
+            z-index: 50;
+        }
+
         .multi-select-dropdown {
             position: absolute;
             top: 100%;
@@ -393,6 +406,7 @@
             overflow-y: auto;
             z-index: 1000;
             display: none;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         }
 
         .multi-select-dropdown.show {
