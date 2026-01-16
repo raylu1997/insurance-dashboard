@@ -496,11 +496,16 @@
             <div class="filter-item" style="grid-column: span 2;">
                 <label>时间范围</label>
                 <div class="date-range-group">
-                    <input type="date" id="startDate" value="2024-01-01">
+                    <input type="datetime-local" id="startDate" value="2024-01-01T00:00">
                     <span style="color: #a0aec0;">至</span>
-                    <input type="date" id="endDate" value="2024-01-16">
+                    <input type="datetime-local" id="endDate" value="2024-01-16T23:59">
                 </div>
                 <div class="quick-date-btns">
+                    <button class="quick-date-btn" data-range="5min">近5分钟</button>
+                    <button class="quick-date-btn" data-range="15min">近15分钟</button>
+                    <button class="quick-date-btn" data-range="30min">近30分钟</button>
+                    <button class="quick-date-btn" data-range="1hour">近1小时</button>
+                    <button class="quick-date-btn" data-range="3hour">近3小时</button>
                     <button class="quick-date-btn" data-range="today">今天</button>
                     <button class="quick-date-btn" data-range="yesterday">昨天</button>
                     <button class="quick-date-btn active" data-range="7days">近7天</button>
@@ -947,43 +952,74 @@
                 this.classList.add('active');
 
                 const range = this.dataset.range;
-                const today = new Date();
+                const now = new Date();
                 let startDate, endDate;
 
                 switch(range) {
+                    case '5min':
+                        endDate = new Date();
+                        startDate = new Date(now.getTime() - 5 * 60 * 1000);
+                        break;
+                    case '15min':
+                        endDate = new Date();
+                        startDate = new Date(now.getTime() - 15 * 60 * 1000);
+                        break;
+                    case '30min':
+                        endDate = new Date();
+                        startDate = new Date(now.getTime() - 30 * 60 * 1000);
+                        break;
+                    case '1hour':
+                        endDate = new Date();
+                        startDate = new Date(now.getTime() - 60 * 60 * 1000);
+                        break;
+                    case '3hour':
+                        endDate = new Date();
+                        startDate = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+                        break;
                     case 'today':
-                        startDate = endDate = today;
+                        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+                        endDate = new Date();
                         break;
                     case 'yesterday':
-                        startDate = endDate = new Date(today.setDate(today.getDate() - 1));
+                        const yesterday = new Date(now);
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        startDate = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 0, 0, 0);
+                        endDate = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59);
                         break;
                     case '7days':
                         endDate = new Date();
-                        startDate = new Date(new Date().setDate(new Date().getDate() - 6));
+                        startDate = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
+                        startDate.setHours(0, 0, 0, 0);
                         break;
                     case '30days':
                         endDate = new Date();
-                        startDate = new Date(new Date().setDate(new Date().getDate() - 29));
+                        startDate = new Date(now.getTime() - 29 * 24 * 60 * 60 * 1000);
+                        startDate.setHours(0, 0, 0, 0);
                         break;
                     case 'thisMonth':
-                        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                        startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
                         endDate = new Date();
                         break;
                     case 'lastMonth':
-                        startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                        endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
+                        endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
                         break;
                     case 'thisQuarter':
-                        const quarter = Math.floor(today.getMonth() / 3);
-                        startDate = new Date(today.getFullYear(), quarter * 3, 1);
+                        const quarter = Math.floor(now.getMonth() / 3);
+                        startDate = new Date(now.getFullYear(), quarter * 3, 1, 0, 0, 0);
                         endDate = new Date();
                         break;
                 }
 
-                document.getElementById('startDate').value = formatDate(startDate);
-                document.getElementById('endDate').value = formatDate(endDate);
+                document.getElementById('startDate').value = formatDateTime(startDate);
+                document.getElementById('endDate').value = formatDateTime(endDate);
             });
         });
+
+        function formatDateTime(date) {
+            const pad = (n) => n.toString().padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        }
 
         function formatDate(date) {
             return date.toISOString().split('T')[0];
@@ -1063,10 +1099,12 @@
             document.getElementById('funnel-report').textContent = funnelData.report.toLocaleString();
         }
 
-        // 初始化日期
-        const today = new Date();
-        document.getElementById('endDate').value = formatDate(today);
-        document.getElementById('startDate').value = formatDate(new Date(new Date().setDate(new Date().getDate() - 6)));
+        // 初始化日期时间
+        const now = new Date();
+        const startInit = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
+        startInit.setHours(0, 0, 0, 0);
+        document.getElementById('endDate').value = formatDateTime(now);
+        document.getElementById('startDate').value = formatDateTime(startInit);
     </script>
 </body>
 </html>
