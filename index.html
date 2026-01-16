@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>保险业务可观测看板</title>
+    <script src="chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -498,6 +499,312 @@
         .animate-pulse {
             animation: pulse 2s ease-in-out infinite;
         }
+
+        /* Tab 导航样式 */
+        .tab-navigation {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: #a0aec0;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 明细表格样式 */
+        .detail-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .detail-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .detail-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .detail-table th,
+        .detail-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detail-table th {
+            color: #a0aec0;
+            font-weight: 500;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.03);
+            position: sticky;
+            top: 0;
+        }
+
+        .detail-table td {
+            font-size: 14px;
+            color: #e2e8f0;
+        }
+
+        .detail-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .table-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background: rgba(72, 187, 120, 0.2);
+            color: #48bb78;
+        }
+
+        .status-pending {
+            background: rgba(237, 137, 54, 0.2);
+            color: #ed8936;
+        }
+
+        .status-failed {
+            background: rgba(245, 101, 101, 0.2);
+            color: #f56565;
+        }
+
+        /* 分页样式 */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pagination-info {
+            color: #a0aec0;
+            font-size: 13px;
+        }
+
+        .pagination-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .page-btn {
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: #a0aec0;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .page-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .page-btn.active {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 保司指标卡片网格 */
+        .insurer-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .insurer-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .insurer-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border-color: rgba(79, 172, 254, 0.3);
+        }
+
+        .insurer-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .insurer-metric {
+            margin-bottom: 12px;
+        }
+
+        .insurer-metric:last-child {
+            margin-bottom: 0;
+        }
+
+        .insurer-metric-label {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-bottom: 4px;
+        }
+
+        .insurer-metric-value {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 图表区域 */
+        .charts-section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .chart-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #a0aec0;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .legend-item:hover {
+            opacity: 0.8;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        @media (max-width: 1200px) {
+            .insurer-metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .insurer-metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
     </style>
 </head>
 <body>
@@ -674,6 +981,16 @@
         </div>
     </div>
 
+    <!-- Tab 导航 -->
+    <div class="tab-navigation">
+        <button class="tab-btn active" data-tab="overview">概览</button>
+        <button class="tab-btn" data-tab="landing">落地页访问明细</button>
+        <button class="tab-btn" data-tab="upgrade">订单升级转化明细</button>
+        <button class="tab-btn" data-tab="media">媒体上报明细</button>
+    </div>
+
+    <!-- 概览 Tab -->
+    <div class="tab-content active" id="tab-overview">
     <!-- 关键指标区域 -->
     <div class="metrics-section">
         <div class="metrics-grid">
@@ -884,8 +1201,552 @@
             </div>
         </div>
     </div>
+    </div>
+
+    <!-- 落地页访问明细 Tab -->
+    <div class="tab-content" id="tab-landing">
+        <div class="detail-section">
+            <div class="detail-header">
+                <div class="detail-title">落地页访问明细</div>
+                <div class="detail-actions">
+                    <button class="btn btn-secondary" onclick="exportTable('landing')">导出数据</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>访问时间</th>
+                            <th>访客ID</th>
+                            <th>落地页URL</th>
+                            <th>来源渠道</th>
+                            <th>PID</th>
+                            <th>OGPID</th>
+                            <th>设备类型</th>
+                            <th>停留时长</th>
+                            <th>是否点击</th>
+                        </tr>
+                    </thead>
+                    <tbody id="landing-table-body">
+                        <tr>
+                            <td>2024-01-16 14:32:15</td>
+                            <td>UV_8a7b6c5d</td>
+                            <td>/landing/health-insurance</td>
+                            <td>抖音</td>
+                            <td>PID001</td>
+                            <td>OGPID001</td>
+                            <td>iOS</td>
+                            <td>45s</td>
+                            <td><span class="status-badge status-success">是</span></td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-16 14:31:08</td>
+                            <td>UV_9c8d7e6f</td>
+                            <td>/landing/car-insurance</td>
+                            <td>快手</td>
+                            <td>PID002</td>
+                            <td>OGPID002</td>
+                            <td>Android</td>
+                            <td>23s</td>
+                            <td><span class="status-badge status-failed">否</span></td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-16 14:30:45</td>
+                            <td>UV_1a2b3c4d</td>
+                            <td>/landing/health-insurance</td>
+                            <td>微信</td>
+                            <td>PID001</td>
+                            <td>OGPID003</td>
+                            <td>iOS</td>
+                            <td>67s</td>
+                            <td><span class="status-badge status-success">是</span></td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-16 14:29:33</td>
+                            <td>UV_5e6f7g8h</td>
+                            <td>/landing/life-insurance</td>
+                            <td>百度</td>
+                            <td>PID003</td>
+                            <td>OGPID001</td>
+                            <td>Android</td>
+                            <td>12s</td>
+                            <td><span class="status-badge status-failed">否</span></td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-16 14:28:21</td>
+                            <td>UV_9i0j1k2l</td>
+                            <td>/landing/health-insurance</td>
+                            <td>头条</td>
+                            <td>PID004</td>
+                            <td>OGPID002</td>
+                            <td>iOS</td>
+                            <td>89s</td>
+                            <td><span class="status-badge status-success">是</span></td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-16 14:27:15</td>
+                            <td>UV_3m4n5o6p</td>
+                            <td>/landing/accident-insurance</td>
+                            <td>抖音</td>
+                            <td>PID001</td>
+                            <td>OGPID003</td>
+                            <td>Android</td>
+                            <td>34s</td>
+                            <td><span class="status-badge status-success">是</span></td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-16 14:26:08</td>
+                            <td>UV_7q8r9s0t</td>
+                            <td>/landing/car-insurance</td>
+                            <td>快手</td>
+                            <td>PID002</td>
+                            <td>OGPID001</td>
+                            <td>iOS</td>
+                            <td>56s</td>
+                            <td><span class="status-badge status-success">是</span></td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-16 14:25:00</td>
+                            <td>UV_1u2v3w4x</td>
+                            <td>/landing/health-insurance</td>
+                            <td>微信</td>
+                            <td>PID003</td>
+                            <td>OGPID002</td>
+                            <td>Android</td>
+                            <td>8s</td>
+                            <td><span class="status-badge status-failed">否</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <div class="pagination-info">共 156,789 条记录，每页 20 条</div>
+                <div class="pagination-btns">
+                    <button class="page-btn" disabled>&lt; 上一页</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">...</button>
+                    <button class="page-btn">7840</button>
+                    <button class="page-btn">下一页 &gt;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 订单升级转化明细 Tab -->
+    <div class="tab-content" id="tab-upgrade">
+        <!-- 各保司指标卡片 -->
+        <div class="insurer-metrics-grid">
+            <!-- 众惠 -->
+            <div class="insurer-card">
+                <div class="insurer-name">众惠</div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">基础订单数</div>
+                    <div class="insurer-metric-value">2,856</div>
+                </div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">升级订单数</div>
+                    <div class="insurer-metric-value">892</div>
+                </div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">升级率</div>
+                    <div class="insurer-metric-value">31.2%</div>
+                </div>
+            </div>
+            <!-- 水滴 -->
+            <div class="insurer-card">
+                <div class="insurer-name">水滴</div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">基础订单数</div>
+                    <div class="insurer-metric-value">3,124</div>
+                </div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">升级订单数</div>
+                    <div class="insurer-metric-value">756</div>
+                </div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">升级率</div>
+                    <div class="insurer-metric-value">24.2%</div>
+                </div>
+            </div>
+            <!-- 泰康互联 -->
+            <div class="insurer-card">
+                <div class="insurer-name">泰康互联</div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">基础订单数</div>
+                    <div class="insurer-metric-value">2,458</div>
+                </div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">升级订单数</div>
+                    <div class="insurer-metric-value">634</div>
+                </div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">升级率</div>
+                    <div class="insurer-metric-value">25.8%</div>
+                </div>
+            </div>
+            <!-- 泰康大健康 -->
+            <div class="insurer-card">
+                <div class="insurer-name">泰康大健康</div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">基础订单数</div>
+                    <div class="insurer-metric-value">2,134</div>
+                </div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">升级订单数</div>
+                    <div class="insurer-metric-value">589</div>
+                </div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">升级率</div>
+                    <div class="insurer-metric-value">27.6%</div>
+                </div>
+            </div>
+            <!-- 暖哇 -->
+            <div class="insurer-card">
+                <div class="insurer-name">暖哇</div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">基础订单数</div>
+                    <div class="insurer-metric-value">1,886</div>
+                </div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">升级订单数</div>
+                    <div class="insurer-metric-value">485</div>
+                </div>
+                <div class="insurer-metric">
+                    <div class="insurer-metric-label">升级率</div>
+                    <div class="insurer-metric-value">25.7%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图表区域 -->
+        <div class="charts-section">
+            <!-- 总计数据综合曲线图 -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">总计数据趋势（基础订单数 / 已支付订单数 / 升级订单数 / 升级率）</div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #4facfe;"></span>
+                            <span>基础订单数</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #9f7aea;"></span>
+                            <span>已支付订单数</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #48bb78;"></span>
+                            <span>升级订单数</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #f56565;"></span>
+                            <span>升级率 (%)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="totalSummaryChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 基础订单数曲线图 -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">基础订单数趋势（分保司）</div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #f56565;"></span>
+                            <span>众惠</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #48bb78;"></span>
+                            <span>水滴</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #ed8936;"></span>
+                            <span>泰康互联</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #9f7aea;"></span>
+                            <span>泰康大健康</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #38b2ac;"></span>
+                            <span>暖哇</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="basicOrdersChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 升级订单数曲线图 -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">升级订单数趋势（分保司）</div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #f56565;"></span>
+                            <span>众惠</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #48bb78;"></span>
+                            <span>水滴</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #ed8936;"></span>
+                            <span>泰康互联</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #9f7aea;"></span>
+                            <span>泰康大健康</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #38b2ac;"></span>
+                            <span>暖哇</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="upgradeOrdersChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 已支付订单数曲线图 -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">已支付订单数趋势（分保司）</div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #f56565;"></span>
+                            <span>众惠</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #48bb78;"></span>
+                            <span>水滴</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #ed8936;"></span>
+                            <span>泰康互联</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #9f7aea;"></span>
+                            <span>泰康大健康</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #38b2ac;"></span>
+                            <span>暖哇</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="paidOrdersChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 升级率曲线图 -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">升级率趋势（分保司）</div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #f56565;"></span>
+                            <span>众惠</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #48bb78;"></span>
+                            <span>水滴</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #ed8936;"></span>
+                            <span>泰康互联</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #9f7aea;"></span>
+                            <span>泰康大健康</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #38b2ac;"></span>
+                            <span>暖哇</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="upgradeRateChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 媒体上报明细 Tab -->
+    <div class="tab-content" id="tab-media">
+        <div class="detail-section">
+            <div class="detail-header">
+                <div class="detail-title">媒体上报明细</div>
+                <div class="detail-actions">
+                    <button class="btn btn-secondary" onclick="exportTable('media')">导出数据</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>上报时间</th>
+                            <th>订单号</th>
+                            <th>媒体渠道</th>
+                            <th>上报事件</th>
+                            <th>转化金额</th>
+                            <th>PID</th>
+                            <th>OGPID</th>
+                            <th>上报状态</th>
+                            <th>回传延迟</th>
+                            <th>错误信息</th>
+                        </tr>
+                    </thead>
+                    <tbody id="media-table-body">
+                        <tr>
+                            <td>2024-01-16 14:32:45</td>
+                            <td>ORD20240116143022001</td>
+                            <td>抖音</td>
+                            <td>付费成功</td>
+                            <td>¥598.00</td>
+                            <td>PID001</td>
+                            <td>OGPID001</td>
+                            <td><span class="status-badge status-success">成功</span></td>
+                            <td>2.3s</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-16 14:30:18</td>
+                            <td>ORD20240116142815002</td>
+                            <td>快手</td>
+                            <td>付费成功</td>
+                            <td>¥1,200.00</td>
+                            <td>PID002</td>
+                            <td>OGPID002</td>
+                            <td><span class="status-badge status-success">成功</span></td>
+                            <td>1.8s</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-16 14:28:33</td>
+                            <td>ORD20240116142533003</td>
+                            <td>微信</td>
+                            <td>付费成功</td>
+                            <td>¥199.00</td>
+                            <td>PID001</td>
+                            <td>OGPID003</td>
+                            <td><span class="status-badge status-failed">失败</span></td>
+                            <td>-</td>
+                            <td>token过期</td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-16 14:25:55</td>
+                            <td>ORD20240116141945005</td>
+                            <td>头条</td>
+                            <td>付费成功</td>
+                            <td>¥758.00</td>
+                            <td>PID003</td>
+                            <td>OGPID001</td>
+                            <td><span class="status-badge status-success">成功</span></td>
+                            <td>3.1s</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-16 14:22:40</td>
+                            <td>ORD20240116141630006</td>
+                            <td>抖音</td>
+                            <td>付费成功</td>
+                            <td>¥3,200.00</td>
+                            <td>PID004</td>
+                            <td>OGPID002</td>
+                            <td><span class="status-badge status-success">成功</span></td>
+                            <td>1.5s</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-16 14:19:28</td>
+                            <td>ORD20240116141008008</td>
+                            <td>微信</td>
+                            <td>付费成功</td>
+                            <td>¥1,580.00</td>
+                            <td>PID001</td>
+                            <td>OGPID003</td>
+                            <td><span class="status-badge status-pending">重试中</span></td>
+                            <td>-</td>
+                            <td>网络超时，第2次重试</td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-16 14:16:15</td>
+                            <td>ORD20240116141615009</td>
+                            <td>快手</td>
+                            <td>表单提交</td>
+                            <td>-</td>
+                            <td>PID002</td>
+                            <td>OGPID001</td>
+                            <td><span class="status-badge status-success">成功</span></td>
+                            <td>0.8s</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-16 14:13:02</td>
+                            <td>ORD20240116141302010</td>
+                            <td>百度</td>
+                            <td>付费成功</td>
+                            <td>¥450.00</td>
+                            <td>PID003</td>
+                            <td>OGPID002</td>
+                            <td><span class="status-badge status-success">成功</span></td>
+                            <td>2.0s</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination">
+                <div class="pagination-info">共 6,892 条记录，每页 20 条</div>
+                <div class="pagination-btns">
+                    <button class="page-btn" disabled>&lt; 上一页</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">...</button>
+                    <button class="page-btn">345</button>
+                    <button class="page-btn">下一页 &gt;</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
+        // Tab 切换功能
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 移除所有 active 状态
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                // 添加当前 active 状态
+                this.classList.add('active');
+                const tabId = 'tab-' + this.dataset.tab;
+                document.getElementById(tabId).classList.add('active');
+
+                // 如果切换到升级转化明细tab，初始化图表
+                if (this.dataset.tab === 'upgrade') {
+                    setTimeout(function() {
+                        initCharts();
+                    }, 200);
+                }
+            });
+        });
+
+        // 导出表格功能
+        function exportTable(type) {
+            alert('正在导出 ' + type + ' 数据...\n(此为演示功能)');
+        }
+
         // 多选下拉框功能
         const selectedValues = {
             insurer: [],
@@ -1119,6 +1980,364 @@
         startInit.setHours(0, 0, 0, 0);
         document.getElementById('endDate').value = formatDateTime(now);
         document.getElementById('startDate').value = formatDateTime(startInit);
+
+        // 图表配置
+        const chartColors = {
+            total: '#4facfe',
+            zhonghui: '#f56565',
+            shuidei: '#48bb78',
+            taikang: '#ed8936',
+            taikangdj: '#9f7aea',
+            nuanwa: '#38b2ac'
+        };
+
+        const labels = ['01-10', '01-11', '01-12', '01-13', '01-14', '01-15', '01-16'];
+
+        // 基础订单数数据
+        const basicOrdersData = {
+            total: [1680, 1720, 1850, 1790, 1920, 1880, 1798],
+            zhonghui: [380, 395, 420, 405, 435, 425, 408],
+            shuidei: [420, 435, 465, 450, 480, 470, 446],
+            taikang: [330, 340, 365, 355, 380, 372, 351],
+            taikangdj: [290, 300, 320, 310, 335, 328, 305],
+            nuanwa: [260, 250, 280, 270, 290, 285, 269]
+        };
+
+        // 已支付订单数数据
+        const paidOrdersData = {
+            total: [1120, 1152, 1238, 1198, 1286, 1258, 1204],
+            zhonghui: [254, 265, 281, 271, 291, 284, 273],
+            shuidei: [281, 291, 311, 301, 321, 314, 298],
+            taikang: [221, 228, 245, 238, 254, 249, 235],
+            taikangdj: [194, 201, 214, 207, 224, 219, 204],
+            nuanwa: [174, 167, 187, 181, 194, 190, 180]
+        };
+
+        // 升级订单数数据
+        const upgradeOrdersData = {
+            total: [445, 462, 498, 480, 520, 505, 480],
+            zhonghui: [118, 125, 135, 128, 142, 138, 127],
+            shuidei: [102, 108, 115, 110, 120, 116, 108],
+            taikang: [85, 90, 98, 94, 102, 98, 91],
+            taikangdj: [78, 82, 90, 86, 95, 92, 84],
+            nuanwa: [62, 57, 60, 62, 61, 61, 69]
+        };
+
+        // 升级率数据
+        const upgradeRateData = {
+            total: [26.5, 26.9, 26.9, 26.8, 27.1, 26.9, 26.7],
+            zhonghui: [31.1, 31.6, 32.1, 31.6, 32.6, 32.5, 31.1],
+            shuidei: [24.3, 24.8, 24.7, 24.4, 25.0, 24.7, 24.2],
+            taikang: [25.8, 26.5, 26.8, 26.5, 26.8, 26.3, 25.9],
+            taikangdj: [26.9, 27.3, 28.1, 27.7, 28.4, 28.0, 27.5],
+            nuanwa: [23.8, 22.8, 21.4, 23.0, 21.0, 21.4, 25.7]
+        };
+
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(26, 26, 46, 0.9)',
+                    titleColor: '#fff',
+                    bodyColor: '#a0aec0',
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1,
+                    padding: 12,
+                    cornerRadius: 8
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)'
+                    },
+                    ticks: {
+                        color: '#a0aec0'
+                    }
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)'
+                    },
+                    ticks: {
+                        color: '#a0aec0'
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            }
+        };
+
+        function createDataset(label, data, color, isTotal = false) {
+            return {
+                label: label,
+                data: data,
+                borderColor: color,
+                backgroundColor: color + '20',
+                borderWidth: isTotal ? 3 : 2,
+                tension: 0.4,
+                fill: isTotal,
+                pointRadius: 3,
+                pointHoverRadius: 6
+            };
+        }
+
+        // 初始化图表变量
+        let totalSummaryChart = null;
+        let basicOrdersChart = null;
+        let paidOrdersChart = null;
+        let upgradeOrdersChart = null;
+        let upgradeRateChart = null;
+
+        function initCharts() {
+            console.log('initCharts called');
+
+            // 总计数据综合图表（双Y轴）
+            const summaryCtx = document.getElementById('totalSummaryChart');
+            if (summaryCtx) {
+                if (totalSummaryChart) totalSummaryChart.destroy();
+                totalSummaryChart = new Chart(summaryCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: '基础订单数',
+                                data: basicOrdersData.total,
+                                borderColor: '#4facfe',
+                                backgroundColor: '#4facfe20',
+                                borderWidth: 3,
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 4,
+                                pointHoverRadius: 7,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '已支付订单数',
+                                data: paidOrdersData.total,
+                                borderColor: '#9f7aea',
+                                backgroundColor: '#9f7aea20',
+                                borderWidth: 3,
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 4,
+                                pointHoverRadius: 7,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '升级订单数',
+                                data: upgradeOrdersData.total,
+                                borderColor: '#48bb78',
+                                backgroundColor: '#48bb7820',
+                                borderWidth: 3,
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 4,
+                                pointHoverRadius: 7,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '升级率 (%)',
+                                data: upgradeRateData.total,
+                                borderColor: '#f56565',
+                                backgroundColor: '#f5656520',
+                                borderWidth: 3,
+                                tension: 0.4,
+                                fill: false,
+                                pointRadius: 4,
+                                pointHoverRadius: 7,
+                                borderDash: [5, 5],
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: 'rgba(26, 26, 46, 0.9)',
+                                titleColor: '#fff',
+                                bodyColor: '#a0aec0',
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                                borderWidth: 1,
+                                padding: 12,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.dataset.yAxisID === 'y1') {
+                                            label += context.parsed.y + '%';
+                                        } else {
+                                            label += context.parsed.y.toLocaleString();
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.05)'
+                                },
+                                ticks: {
+                                    color: '#a0aec0'
+                                }
+                            },
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: '订单数',
+                                    color: '#a0aec0'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.05)'
+                                },
+                                ticks: {
+                                    color: '#a0aec0'
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: '升级率 (%)',
+                                    color: '#f56565'
+                                },
+                                grid: {
+                                    drawOnChartArea: false
+                                },
+                                ticks: {
+                                    color: '#f56565',
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                },
+                                min: 20,
+                                max: 35
+                            }
+                        },
+                        interaction: {
+                            mode: 'nearest',
+                            axis: 'x',
+                            intersect: false
+                        }
+                    }
+                });
+                console.log('totalSummaryChart created');
+            }
+
+            // 基础订单数图表（分保司）
+            const basicCtx = document.getElementById('basicOrdersChart');
+            console.log('basicCtx:', basicCtx);
+            if (basicCtx) {
+                if (basicOrdersChart) basicOrdersChart.destroy();
+                basicOrdersChart = new Chart(basicCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            createDataset('众惠', basicOrdersData.zhonghui, chartColors.zhonghui),
+                            createDataset('水滴', basicOrdersData.shuidei, chartColors.shuidei),
+                            createDataset('泰康互联', basicOrdersData.taikang, chartColors.taikang),
+                            createDataset('泰康大健康', basicOrdersData.taikangdj, chartColors.taikangdj),
+                            createDataset('暖哇', basicOrdersData.nuanwa, chartColors.nuanwa)
+                        ]
+                    },
+                    options: commonOptions
+                });
+                console.log('basicOrdersChart created');
+            }
+
+            // 升级订单数图表（分保司）
+            const upgradeCtx = document.getElementById('upgradeOrdersChart');
+            if (upgradeCtx) {
+                if (upgradeOrdersChart) upgradeOrdersChart.destroy();
+                upgradeOrdersChart = new Chart(upgradeCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            createDataset('众惠', upgradeOrdersData.zhonghui, chartColors.zhonghui),
+                            createDataset('水滴', upgradeOrdersData.shuidei, chartColors.shuidei),
+                            createDataset('泰康互联', upgradeOrdersData.taikang, chartColors.taikang),
+                            createDataset('泰康大健康', upgradeOrdersData.taikangdj, chartColors.taikangdj),
+                            createDataset('暖哇', upgradeOrdersData.nuanwa, chartColors.nuanwa)
+                        ]
+                    },
+                    options: commonOptions
+                });
+            }
+
+            // 已支付订单数图表（分保司）
+            const paidCtx = document.getElementById('paidOrdersChart');
+            if (paidCtx) {
+                if (paidOrdersChart) paidOrdersChart.destroy();
+                paidOrdersChart = new Chart(paidCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            createDataset('众惠', paidOrdersData.zhonghui, chartColors.zhonghui),
+                            createDataset('水滴', paidOrdersData.shuidei, chartColors.shuidei),
+                            createDataset('泰康互联', paidOrdersData.taikang, chartColors.taikang),
+                            createDataset('泰康大健康', paidOrdersData.taikangdj, chartColors.taikangdj),
+                            createDataset('暖哇', paidOrdersData.nuanwa, chartColors.nuanwa)
+                        ]
+                    },
+                    options: commonOptions
+                });
+            }
+
+            // 升级率图表（分保司）
+            const rateCtx = document.getElementById('upgradeRateChart');
+            if (rateCtx) {
+                if (upgradeRateChart) upgradeRateChart.destroy();
+                const rateOptions = JSON.parse(JSON.stringify(commonOptions));
+                rateOptions.scales.y.ticks.callback = function(value) {
+                    return value + '%';
+                };
+                upgradeRateChart = new Chart(rateCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            createDataset('众惠', upgradeRateData.zhonghui, chartColors.zhonghui),
+                            createDataset('水滴', upgradeRateData.shuidei, chartColors.shuidei),
+                            createDataset('泰康互联', upgradeRateData.taikang, chartColors.taikang),
+                            createDataset('泰康大健康', upgradeRateData.taikangdj, chartColors.taikangdj),
+                            createDataset('暖哇', upgradeRateData.nuanwa, chartColors.nuanwa)
+                        ]
+                    },
+                    options: rateOptions
+                });
+            }
+        }
+
     </script>
 </body>
 </html>
