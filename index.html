@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>保险业务可观测看板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .dashboard-title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 筛选条件区域 */
+        .filter-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #a0aec0;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-item label {
+            font-size: 13px;
+            color: #a0aec0;
+        }
+
+        .filter-item input,
+        .filter-item select {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .filter-item input:focus,
+        .filter-item select:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.2);
+        }
+
+        .filter-item select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        .date-range-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .date-range-group input {
+            flex: 1;
+        }
+
+        .quick-date-btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .quick-date-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: #a0aec0;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-date-btn:hover,
+        .quick-date-btn.active {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #a0aec0;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 指标卡片区域 */
+        .metrics-section {
+            margin-bottom: 24px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border-color: rgba(79, 172, 254, 0.3);
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: #a0aec0;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .metric-comparison {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+        }
+
+        .comparison-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .comparison-label {
+            color: #a0aec0;
+        }
+
+        .comparison-value {
+            font-weight: 500;
+        }
+
+        .comparison-value.up {
+            color: #48bb78;
+        }
+
+        .comparison-value.down {
+            color: #f56565;
+        }
+
+        .arrow-up::before {
+            content: '↑';
+            margin-right: 2px;
+        }
+
+        .arrow-down::before {
+            content: '↓';
+            margin-right: 2px;
+        }
+
+        /* 漏斗图区域 */
+        .funnel-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .funnel-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #fff;
+        }
+
+        .funnel-container {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        .funnel-chart {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .funnel-item {
+            position: relative;
+            margin-bottom: 4px;
+            transition: all 0.3s;
+        }
+
+        .funnel-item:hover {
+            transform: scale(1.02);
+        }
+
+        .funnel-bar {
+            height: 48px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            position: relative;
+            margin: 0 auto;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .funnel-bar:hover {
+            filter: brightness(1.1);
+        }
+
+        .funnel-data {
+            flex: 1;
+        }
+
+        .funnel-data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .funnel-data-table th,
+        .funnel-data-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .funnel-data-table th {
+            color: #a0aec0;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .funnel-data-table td {
+            font-size: 14px;
+        }
+
+        .funnel-data-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .conversion-rate {
+            color: #4facfe;
+            font-weight: 500;
+        }
+
+        .stage-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        /* 多选下拉框样式 */
+        .multi-select-container {
+            position: relative;
+        }
+
+        .multi-select-display {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .multi-select-display:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .multi-select-tag {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .multi-select-tag .remove {
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .multi-select-tag .remove:hover {
+            opacity: 1;
+        }
+
+        .multi-select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #1a1a2e;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            margin-top: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .multi-select-dropdown.show {
+            display: block;
+        }
+
+        .multi-select-option {
+            padding: 10px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .multi-select-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .multi-select-option.selected {
+            background: rgba(79, 172, 254, 0.2);
+        }
+
+        .multi-select-checkbox {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .multi-select-option.selected .multi-select-checkbox {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            border-color: transparent;
+        }
+
+        .multi-select-option.selected .multi-select-checkbox::after {
+            content: '✓';
+            font-size: 10px;
+            color: #fff;
+        }
+
+        .placeholder {
+            color: #a0aec0;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .funnel-container {
+                flex-direction: column;
+            }
+
+            .funnel-chart {
+                max-width: 100%;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* 加载动画 */
+        .loading {
+            position: relative;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(26, 26, 46, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .animate-pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="dashboard-title">保险业务可观测看板</h1>
+
+    <!-- 筛选条件区域 -->
+    <div class="filter-section">
+        <div class="filter-title">筛选条件</div>
+        <div class="filter-grid">
+            <div class="filter-item" style="grid-column: span 2;">
+                <label>时间范围</label>
+                <div class="date-range-group">
+                    <input type="date" id="startDate" value="2024-01-01">
+                    <span style="color: #a0aec0;">至</span>
+                    <input type="date" id="endDate" value="2024-01-16">
+                </div>
+                <div class="quick-date-btns">
+                    <button class="quick-date-btn" data-range="today">今天</button>
+                    <button class="quick-date-btn" data-range="yesterday">昨天</button>
+                    <button class="quick-date-btn active" data-range="7days">近7天</button>
+                    <button class="quick-date-btn" data-range="30days">近30天</button>
+                    <button class="quick-date-btn" data-range="thisMonth">本月</button>
+                    <button class="quick-date-btn" data-range="lastMonth">上月</button>
+                    <button class="quick-date-btn" data-range="thisQuarter">本季度</button>
+                </div>
+            </div>
+            <div class="filter-item">
+                <label>保司名称</label>
+                <div class="multi-select-container" data-name="insurer">
+                    <div class="multi-select-display" onclick="toggleDropdown(this)">
+                        <span class="placeholder">请选择保司</span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                        <div class="multi-select-option" data-value="pingan">
+                            <span class="multi-select-checkbox"></span>
+                            <span>中国平安</span>
+                        </div>
+                        <div class="multi-select-option" data-value="taiping">
+                            <span class="multi-select-checkbox"></span>
+                            <span>太平洋保险</span>
+                        </div>
+                        <div class="multi-select-option" data-value="picc">
+                            <span class="multi-select-checkbox"></span>
+                            <span>中国人保</span>
+                        </div>
+                        <div class="multi-select-option" data-value="chinlife">
+                            <span class="multi-select-checkbox"></span>
+                            <span>中国人寿</span>
+                        </div>
+                        <div class="multi-select-option" data-value="xinhua">
+                            <span class="multi-select-checkbox"></span>
+                            <span>新华保险</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-item">
+                <label>产品名称</label>
+                <div class="multi-select-container" data-name="product">
+                    <div class="multi-select-display" onclick="toggleDropdown(this)">
+                        <span class="placeholder">请选择产品</span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                        <div class="multi-select-option" data-value="health1">
+                            <span class="multi-select-checkbox"></span>
+                            <span>百万医疗险</span>
+                        </div>
+                        <div class="multi-select-option" data-value="health2">
+                            <span class="multi-select-checkbox"></span>
+                            <span>重疾险</span>
+                        </div>
+                        <div class="multi-select-option" data-value="life1">
+                            <span class="multi-select-checkbox"></span>
+                            <span>定期寿险</span>
+                        </div>
+                        <div class="multi-select-option" data-value="acc1">
+                            <span class="multi-select-checkbox"></span>
+                            <span>意外险</span>
+                        </div>
+                        <div class="multi-select-option" data-value="car1">
+                            <span class="multi-select-checkbox"></span>
+                            <span>车险</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-item">
+                <label>PID</label>
+                <div class="multi-select-container" data-name="pid">
+                    <div class="multi-select-display" onclick="toggleDropdown(this)">
+                        <span class="placeholder">请选择PID</span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                        <div class="multi-select-option" data-value="pid001">
+                            <span class="multi-select-checkbox"></span>
+                            <span>PID001</span>
+                        </div>
+                        <div class="multi-select-option" data-value="pid002">
+                            <span class="multi-select-checkbox"></span>
+                            <span>PID002</span>
+                        </div>
+                        <div class="multi-select-option" data-value="pid003">
+                            <span class="multi-select-checkbox"></span>
+                            <span>PID003</span>
+                        </div>
+                        <div class="multi-select-option" data-value="pid004">
+                            <span class="multi-select-checkbox"></span>
+                            <span>PID004</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-item">
+                <label>OGPID</label>
+                <div class="multi-select-container" data-name="ogpid">
+                    <div class="multi-select-display" onclick="toggleDropdown(this)">
+                        <span class="placeholder">请选择OGPID</span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                        <div class="multi-select-option" data-value="ogpid001">
+                            <span class="multi-select-checkbox"></span>
+                            <span>OGPID001</span>
+                        </div>
+                        <div class="multi-select-option" data-value="ogpid002">
+                            <span class="multi-select-checkbox"></span>
+                            <span>OGPID002</span>
+                        </div>
+                        <div class="multi-select-option" data-value="ogpid003">
+                            <span class="multi-select-checkbox"></span>
+                            <span>OGPID003</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-item">
+                <label>媒体渠道</label>
+                <div class="multi-select-container" data-name="channel">
+                    <div class="multi-select-display" onclick="toggleDropdown(this)">
+                        <span class="placeholder">请选择媒体渠道</span>
+                    </div>
+                    <div class="multi-select-dropdown">
+                        <div class="multi-select-option" data-value="douyin">
+                            <span class="multi-select-checkbox"></span>
+                            <span>抖音</span>
+                        </div>
+                        <div class="multi-select-option" data-value="kuaishou">
+                            <span class="multi-select-checkbox"></span>
+                            <span>快手</span>
+                        </div>
+                        <div class="multi-select-option" data-value="weixin">
+                            <span class="multi-select-checkbox"></span>
+                            <span>微信</span>
+                        </div>
+                        <div class="multi-select-option" data-value="baidu">
+                            <span class="multi-select-checkbox"></span>
+                            <span>百度</span>
+                        </div>
+                        <div class="multi-select-option" data-value="toutiao">
+                            <span class="multi-select-checkbox"></span>
+                            <span>头条</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="filter-actions">
+            <button class="btn btn-secondary" onclick="resetFilters()">重置</button>
+            <button class="btn btn-primary" onclick="applyFilters()">查询</button>
+        </div>
+    </div>
+
+    <!-- 关键指标区域 -->
+    <div class="metrics-section">
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">基础订单数</div>
+                <div class="metric-value" id="basicOrders">12,458</div>
+                <div class="metric-comparison">
+                    <div class="comparison-item">
+                        <span class="comparison-label">同比</span>
+                        <span class="comparison-value up arrow-up">23.5%</span>
+                    </div>
+                    <div class="comparison-item">
+                        <span class="comparison-label">环比</span>
+                        <span class="comparison-value up arrow-up">8.2%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">已支付订单数</div>
+                <div class="metric-value" id="paidOrders">8,234</div>
+                <div class="metric-comparison">
+                    <div class="comparison-item">
+                        <span class="comparison-label">同比</span>
+                        <span class="comparison-value up arrow-up">18.7%</span>
+                    </div>
+                    <div class="comparison-item">
+                        <span class="comparison-label">环比</span>
+                        <span class="comparison-value down arrow-down">2.3%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">升级订单数</div>
+                <div class="metric-value" id="upgradeOrders">2,156</div>
+                <div class="metric-comparison">
+                    <div class="comparison-item">
+                        <span class="comparison-label">同比</span>
+                        <span class="comparison-value up arrow-up">31.2%</span>
+                    </div>
+                    <div class="comparison-item">
+                        <span class="comparison-label">环比</span>
+                        <span class="comparison-value up arrow-up">12.8%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">订单升级率</div>
+                <div class="metric-value" id="upgradeRate">26.2%</div>
+                <div class="metric-comparison">
+                    <div class="comparison-item">
+                        <span class="comparison-label">同比</span>
+                        <span class="comparison-value up arrow-up">5.3%</span>
+                    </div>
+                    <div class="comparison-item">
+                        <span class="comparison-label">环比</span>
+                        <span class="comparison-value up arrow-up">3.1%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">媒体上报数</div>
+                <div class="metric-value" id="mediaReport">6,892</div>
+                <div class="metric-comparison">
+                    <div class="comparison-item">
+                        <span class="comparison-label">同比</span>
+                        <span class="comparison-value up arrow-up">15.4%</span>
+                    </div>
+                    <div class="comparison-item">
+                        <span class="comparison-label">环比</span>
+                        <span class="comparison-value down arrow-down">1.8%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">媒体上报率</div>
+                <div class="metric-value" id="mediaReportRate">83.7%</div>
+                <div class="metric-comparison">
+                    <div class="comparison-item">
+                        <span class="comparison-label">同比</span>
+                        <span class="comparison-value down arrow-down">2.1%</span>
+                    </div>
+                    <div class="comparison-item">
+                        <span class="comparison-label">环比</span>
+                        <span class="comparison-value up arrow-up">1.5%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 漏斗图区域 -->
+    <div class="funnel-section">
+        <div class="funnel-title">转化漏斗</div>
+        <div class="funnel-container">
+            <div class="funnel-chart">
+                <div class="funnel-item">
+                    <div class="funnel-bar" style="width: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);">
+                        落地页访问数
+                    </div>
+                </div>
+                <div class="funnel-item">
+                    <div class="funnel-bar" style="width: 85%; background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);">
+                        提交按钮点击数
+                    </div>
+                </div>
+                <div class="funnel-item">
+                    <div class="funnel-bar" style="width: 70%; background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);">
+                        进单数
+                    </div>
+                </div>
+                <div class="funnel-item">
+                    <div class="funnel-bar" style="width: 55%; background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);">
+                        基础订单数
+                    </div>
+                </div>
+                <div class="funnel-item">
+                    <div class="funnel-bar" style="width: 40%; background: linear-gradient(90deg, #fa709a 0%, #fee140 100%);">
+                        已支付订单数
+                    </div>
+                </div>
+                <div class="funnel-item">
+                    <div class="funnel-bar" style="width: 25%; background: linear-gradient(90deg, #a8edea 0%, #fed6e3 100%); color: #333;">
+                        升级订单数
+                    </div>
+                </div>
+                <div class="funnel-item">
+                    <div class="funnel-bar" style="width: 20%; background: linear-gradient(90deg, #ffecd2 0%, #fcb69f 100%); color: #333;">
+                        媒体上报数
+                    </div>
+                </div>
+            </div>
+            <div class="funnel-data">
+                <table class="funnel-data-table">
+                    <thead>
+                        <tr>
+                            <th>漏斗阶段</th>
+                            <th>数量</th>
+                            <th>转化率</th>
+                            <th>整体转化率</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="stage-indicator" style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);"></span>
+                                落地页访问数
+                            </td>
+                            <td id="funnel-pv">156,789</td>
+                            <td class="conversion-rate">-</td>
+                            <td class="conversion-rate">100%</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="stage-indicator" style="background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);"></span>
+                                提交按钮点击数
+                            </td>
+                            <td id="funnel-click">45,234</td>
+                            <td class="conversion-rate">28.85%</td>
+                            <td class="conversion-rate">28.85%</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="stage-indicator" style="background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);"></span>
+                                进单数
+                            </td>
+                            <td id="funnel-lead">23,456</td>
+                            <td class="conversion-rate">51.85%</td>
+                            <td class="conversion-rate">14.96%</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="stage-indicator" style="background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);"></span>
+                                基础订单数
+                            </td>
+                            <td id="funnel-basic">12,458</td>
+                            <td class="conversion-rate">53.11%</td>
+                            <td class="conversion-rate">7.95%</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="stage-indicator" style="background: linear-gradient(90deg, #fa709a 0%, #fee140 100%);"></span>
+                                已支付订单数
+                            </td>
+                            <td id="funnel-paid">8,234</td>
+                            <td class="conversion-rate">66.09%</td>
+                            <td class="conversion-rate">5.25%</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="stage-indicator" style="background: linear-gradient(90deg, #a8edea 0%, #fed6e3 100%);"></span>
+                                升级订单数
+                            </td>
+                            <td id="funnel-upgrade">2,156</td>
+                            <td class="conversion-rate">26.18%</td>
+                            <td class="conversion-rate">1.38%</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span class="stage-indicator" style="background: linear-gradient(90deg, #ffecd2 0%, #fcb69f 100%);"></span>
+                                媒体上报数
+                            </td>
+                            <td id="funnel-report">6,892</td>
+                            <td class="conversion-rate">83.72%</td>
+                            <td class="conversion-rate">4.40%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 多选下拉框功能
+        const selectedValues = {
+            insurer: [],
+            product: [],
+            pid: [],
+            ogpid: [],
+            channel: []
+        };
+
+        function toggleDropdown(element) {
+            const dropdown = element.nextElementSibling;
+            const allDropdowns = document.querySelectorAll('.multi-select-dropdown');
+
+            allDropdowns.forEach(d => {
+                if (d !== dropdown) d.classList.remove('show');
+            });
+
+            dropdown.classList.toggle('show');
+        }
+
+        // 点击选项
+        document.querySelectorAll('.multi-select-option').forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('selected');
+
+                const container = this.closest('.multi-select-container');
+                const name = container.dataset.name;
+                const value = this.dataset.value;
+                const label = this.querySelector('span:last-child').textContent;
+
+                if (this.classList.contains('selected')) {
+                    selectedValues[name].push({ value, label });
+                } else {
+                    selectedValues[name] = selectedValues[name].filter(item => item.value !== value);
+                }
+
+                updateDisplay(container);
+            });
+        });
+
+        function updateDisplay(container) {
+            const name = container.dataset.name;
+            const display = container.querySelector('.multi-select-display');
+            const values = selectedValues[name];
+
+            if (values.length === 0) {
+                display.innerHTML = '<span class="placeholder">请选择</span>';
+            } else {
+                display.innerHTML = values.map(item =>
+                    `<span class="multi-select-tag">${item.label}<span class="remove" onclick="removeTag(event, '${name}', '${item.value}')">&times;</span></span>`
+                ).join('');
+            }
+        }
+
+        function removeTag(event, name, value) {
+            event.stopPropagation();
+            selectedValues[name] = selectedValues[name].filter(item => item.value !== value);
+
+            const container = document.querySelector(`.multi-select-container[data-name="${name}"]`);
+            const option = container.querySelector(`.multi-select-option[data-value="${value}"]`);
+            if (option) option.classList.remove('selected');
+
+            updateDisplay(container);
+        }
+
+        // 点击外部关闭下拉框
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.multi-select-container')) {
+                document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('show'));
+            }
+        });
+
+        // 快捷日期按钮
+        document.querySelectorAll('.quick-date-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.quick-date-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const range = this.dataset.range;
+                const today = new Date();
+                let startDate, endDate;
+
+                switch(range) {
+                    case 'today':
+                        startDate = endDate = today;
+                        break;
+                    case 'yesterday':
+                        startDate = endDate = new Date(today.setDate(today.getDate() - 1));
+                        break;
+                    case '7days':
+                        endDate = new Date();
+                        startDate = new Date(new Date().setDate(new Date().getDate() - 6));
+                        break;
+                    case '30days':
+                        endDate = new Date();
+                        startDate = new Date(new Date().setDate(new Date().getDate() - 29));
+                        break;
+                    case 'thisMonth':
+                        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                        endDate = new Date();
+                        break;
+                    case 'lastMonth':
+                        startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                        endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                        break;
+                    case 'thisQuarter':
+                        const quarter = Math.floor(today.getMonth() / 3);
+                        startDate = new Date(today.getFullYear(), quarter * 3, 1);
+                        endDate = new Date();
+                        break;
+                }
+
+                document.getElementById('startDate').value = formatDate(startDate);
+                document.getElementById('endDate').value = formatDate(endDate);
+            });
+        });
+
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        // 重置筛选条件
+        function resetFilters() {
+            // 重置日期
+            const today = new Date();
+            document.getElementById('endDate').value = formatDate(today);
+            document.getElementById('startDate').value = formatDate(new Date(today.setDate(today.getDate() - 6)));
+
+            // 重置快捷按钮
+            document.querySelectorAll('.quick-date-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.quick-date-btn[data-range="7days"]').classList.add('active');
+
+            // 重置多选
+            Object.keys(selectedValues).forEach(key => {
+                selectedValues[key] = [];
+                const container = document.querySelector(`.multi-select-container[data-name="${key}"]`);
+                container.querySelectorAll('.multi-select-option').forEach(opt => opt.classList.remove('selected'));
+                updateDisplay(container);
+            });
+        }
+
+        // 应用筛选条件
+        function applyFilters() {
+            // 模拟加载效果
+            const cards = document.querySelectorAll('.metric-card');
+            cards.forEach(card => card.classList.add('animate-pulse'));
+
+            setTimeout(() => {
+                // 模拟数据更新
+                updateMetrics();
+                cards.forEach(card => card.classList.remove('animate-pulse'));
+            }, 800);
+        }
+
+        // 模拟数据更新
+        function updateMetrics() {
+            const randomFactor = 0.8 + Math.random() * 0.4;
+
+            const baseData = {
+                basicOrders: Math.round(12458 * randomFactor),
+                paidOrders: Math.round(8234 * randomFactor),
+                upgradeOrders: Math.round(2156 * randomFactor),
+                mediaReport: Math.round(6892 * randomFactor),
+            };
+
+            baseData.upgradeRate = ((baseData.upgradeOrders / baseData.paidOrders) * 100).toFixed(1) + '%';
+            baseData.mediaReportRate = ((baseData.mediaReport / baseData.paidOrders) * 100).toFixed(1) + '%';
+
+            document.getElementById('basicOrders').textContent = baseData.basicOrders.toLocaleString();
+            document.getElementById('paidOrders').textContent = baseData.paidOrders.toLocaleString();
+            document.getElementById('upgradeOrders').textContent = baseData.upgradeOrders.toLocaleString();
+            document.getElementById('upgradeRate').textContent = baseData.upgradeRate;
+            document.getElementById('mediaReport').textContent = baseData.mediaReport.toLocaleString();
+            document.getElementById('mediaReportRate').textContent = baseData.mediaReportRate;
+
+            // 更新漏斗数据
+            const funnelData = {
+                pv: Math.round(156789 * randomFactor),
+                click: Math.round(45234 * randomFactor),
+                lead: Math.round(23456 * randomFactor),
+                basic: baseData.basicOrders,
+                paid: baseData.paidOrders,
+                upgrade: baseData.upgradeOrders,
+                report: baseData.mediaReport
+            };
+
+            document.getElementById('funnel-pv').textContent = funnelData.pv.toLocaleString();
+            document.getElementById('funnel-click').textContent = funnelData.click.toLocaleString();
+            document.getElementById('funnel-lead').textContent = funnelData.lead.toLocaleString();
+            document.getElementById('funnel-basic').textContent = funnelData.basic.toLocaleString();
+            document.getElementById('funnel-paid').textContent = funnelData.paid.toLocaleString();
+            document.getElementById('funnel-upgrade').textContent = funnelData.upgrade.toLocaleString();
+            document.getElementById('funnel-report').textContent = funnelData.report.toLocaleString();
+        }
+
+        // 初始化日期
+        const today = new Date();
+        document.getElementById('endDate').value = formatDate(today);
+        document.getElementById('startDate').value = formatDate(new Date(new Date().setDate(new Date().getDate() - 6)));
+    </script>
+</body>
+</html>
